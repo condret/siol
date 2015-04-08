@@ -1,9 +1,15 @@
+#ifndef S_IO_API
+#define S_IO_API
+
 #include <sdh.h>
 
 #define S_IO_READ	4
 #define S_IO_WRITE	2
 #define S_IO_EXEC	1
 #define S_IO_RW		S_IO_READ|S_IO_WRITE
+
+#define S_TRUE	1
+#define S_FALSE	0
 
 typedef struct s_io_t {
 	SIODesc *desc;
@@ -41,3 +47,9 @@ typedef struct s_io_desc_t {
 	SIOCbs *cbs;
 	SIO *io;
 } SIODesc;
+
+// desc.c
+int s_io_desc_inti (SIO *io);
+SIODesc *s_io_desc_new (SIOCbs *cbs, int fd, char *uri, int flags, void *data);
+
+#endif
