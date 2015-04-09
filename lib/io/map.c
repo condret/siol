@@ -36,3 +36,29 @@ void s_io_map_init (SIO *io)
 		io->maps->free = free();
 	}
 }
+
+int s_io_map_exists (SIO *io, SIOMap *map)
+{
+	SdbListIter *iter;
+	SIOMap *m;
+	if (!io || !io->maps || !map)
+		return S_FALSE;
+	ls_foreach (io->maps, iter, m) {
+		if (*m == *map)
+			return S_TRUE;
+	}
+	return S_FALSE;
+}
+
+int s_io_map_exists_for_id (SIO *io, ut32 id)
+{
+	SdbListIter *iter;
+	SIOMap *map;
+	if (!io || !io->maps)
+		return S_FALSE;
+	ls_foreach (io->maps, iter, map) {
+		if (map->id == id)
+			return S_TRUE;
+	}
+	return S_FALSE;
+}

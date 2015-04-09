@@ -57,4 +57,7 @@ SIODesc *s_io_desc_new (SIOCbs *cbs, int fd, char *uri, int flags, void *data);
 //map.c
 SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 size);
 void s_io_map_init (SIO *io);
+int s_io_map_exists (SIO *io, SIOMap *map);
+int s_io_map_exists_for_id (SIO *io, ut32 id);
+
 #endif
