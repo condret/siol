@@ -17,6 +17,8 @@ typedef struct s_io_t {
 	int va;
 	int ff;
 	int autofd;
+	ut32 map_id;
+	SdbList *freed_maps_ids;
 	SdbList *maps;
 	//SdbList *cache;
 	Sdb *files;
@@ -48,8 +50,11 @@ typedef struct s_io_desc_t {
 	SIO *io;
 } SIODesc;
 
-// desc.c
-int s_io_desc_inti (SIO *io);
+//desc.c
+int s_io_desc_init (SIO *io);
 SIODesc *s_io_desc_new (SIOCbs *cbs, int fd, char *uri, int flags, void *data);
 
+//map.c
+SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 size);
+void s_io_map_init (SIO *io);
 #endif
