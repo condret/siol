@@ -108,3 +108,16 @@ int s_io_map_priorize (SIO *io, ut32 id)
 	}
 	return S_FALSE;
 }
+
+void s_io_map_fini (SIO *io)
+{
+	if (!io)
+		return;
+	if (io->maps)
+		ls_free (io->maps);
+	io->maps = NULL;
+	if (io->freed_map_ids)
+		ls_free (io->freed_map_ids);
+	io->freed_map_ids = NULL;
+	io->map_id = 0;
+}
