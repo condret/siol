@@ -62,3 +62,23 @@ int s_io_map_exists_for_id (SIO *io, ut32 id)
 	}
 	return S_FALSE;
 }
+
+int s_io_map_del (SIO *io, ut32 id)
+{
+	SdbListIter *iter;
+	SIOMap *map;
+	if (!io || !io->maps)
+		return S_FALSE;
+	ls_foreach (io->maps, iter, map) {
+		if (map->id == id) {
+			ls_delete (io->maps, iter);
+			if (!io->freed_map_ids) {
+				io->freed_map_ids = ls_new ();
+				io->freed_map_ids->free = NULL;
+			}
+			ls_prepend (io->freed_map_ids, (void *)id);
+			return S_TRUE;
+		}
+	}
+	return S_FALSE;
+}
