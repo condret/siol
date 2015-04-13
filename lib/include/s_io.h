@@ -53,6 +53,7 @@ typedef struct s_io_desc_t {
 //desc.c
 int s_io_desc_init (SIO *io);
 SIODesc *s_io_desc_new (SIOCbs *cbs, int fd, char *uri, int flags, void *data);
+int s_io_desc_add (SIO *io, SIODesc *desc);
 
 //map.c
 SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 size);
