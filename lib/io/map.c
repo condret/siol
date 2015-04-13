@@ -82,3 +82,29 @@ int s_io_map_del (SIO *io, ut32 id)
 	}
 	return S_FALSE;
 }
+
+int s_io_map_priorize (SIO *io, ut32 id)
+{
+	SdbListIter *iter;
+	SIOMap *map;
+	if (!io || !io->maps)
+		return S_FALSE;
+	ls_foreach (io->maps, iter, map) {
+		if (map->id == id) {
+			if (io->maps->head == iter)
+				return S_TRUE;
+			if (iter->n)
+				iter->n->p = iter->p;
+			if (iter->p)
+				iter->p->n = iter->n;
+			if (io->maps->tail == iter)
+				io->maps->tail = iter->p;
+			io->maps->head->p = iter;
+			iter->n = io->maps->head;
+			io->maps->head = iter;
+			iter->p = NULL;
+			return S_TRUE;
+		}
+	}
+	return S_FALSE;
+}
