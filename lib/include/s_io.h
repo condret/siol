@@ -68,4 +68,7 @@ int s_io_map_del (SIO *io, ut32 id);
 int s_io_map_priorize (SIO *io, ut32 id);
 void s_io_map_fini (SIO *io);
 
+//io.c
+SIO *s_io_new ();
+SIO *s_io_init (SIO *io);
 #endif
