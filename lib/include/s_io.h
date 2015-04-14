@@ -57,6 +57,7 @@ void s_io_desc_free (SIODesc *desc);
 int s_io_desc_add (SIO *io, SIODesc *desc);
 int s_io_desc_del (SIO *io, int fd);
 SIODesc *s_io_desc_get (SIO *io, int fd);
+int s_io_desc_use (SIO *io, int fd);
 
 //map.c
 SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 size);
