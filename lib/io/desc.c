@@ -70,7 +70,7 @@ SIODesc *s_io_desc_get (SIO *io, int fd)
 int s_io_desc_use (SIO *io, int fd)
 {
 	SIODesc *desc;
-	if (!desc = s_io_desc_get (io, fd))
+	if (!(desc = s_io_desc_get (io, fd)))
 		return S_FALSE;
 	io->desc = desc;
 	return S_TRUE;

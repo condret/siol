@@ -24,7 +24,7 @@ SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 si
 	map->fd = fd;
 	map->from = addr;
 	map->to = addr + size;
-	map->flags;
+	map->flags = flags;
 	ls_append (io->maps, map);
 	return map;
 }
@@ -33,7 +33,7 @@ void s_io_map_init (SIO *io)
 {
 	if (io) {
 		io->maps = ls_new ();
-		io->maps->free = free();
+		io->maps->free = free;
 	}
 }
 
@@ -44,7 +44,7 @@ int s_io_map_exists (SIO *io, SIOMap *map)
 	if (!io || !io->maps || !map)
 		return S_FALSE;
 	ls_foreach (io->maps, iter, m) {
-		if (*m == *map)
+		if (!memcmp (m, map, sizeof(SIOMap)))
 			return S_TRUE;
 	}
 	return S_FALSE;

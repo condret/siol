@@ -1,7 +1,7 @@
 #ifndef S_IO_API
 #define S_IO_API
 
-#include <sdh.h>
+#include <sdb.h>
 
 #define S_IO_READ	4
 #define S_IO_WRITE	2
@@ -12,24 +12,24 @@
 #define S_FALSE	0
 
 typedef struct s_io_t {
-	SIODesc *desc;
+	struct s_io_desc_t *desc;
 	ut64 off;
 	int va;
 	int ff;
 	int autofd;
 	ut32 map_id;
-	SdbList *freed_maps_ids;
+	SdbList *freed_map_ids;
 	SdbList *maps;
 	//SdbList *cache;
 	Sdb *files;
 } SIO;
 
 typedef struct s_io_callbacks_t {
-	SIODesc *(*open)(SIO *io, const char *uri, int flags, int mode);
-	int (*read)(SIO *io, SIODesc *desc, ut8 *buf, int len);
-	int (*lseek)(SIO *io, SIODesc *desc, ut64 offset, int whence);
-	int (*write)(SIO *io, SIODesc *desc, const ut8 *buf, int len);
-	int (*close)(SIODesc *desc);
+	struct s_io_desc_t *(*open)(SIO *io, const char *uri, int flags, int mode);
+	int (*read)(SIO *io, struct s_io_desc_t *desc, ut8 *buf, int len);
+	int (*lseek)(SIO *io, struct s_io_desc_t *desc, ut64 offset, int whence);
+	int (*write)(SIO *io, struct s_io_desc_t *desc, const ut8 *buf, int len);
+	int (*close)(struct s_io_desc_t *desc);
 } SIOCbs;
 
 typedef struct s_io_map_t {
