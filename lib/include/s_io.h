@@ -8,6 +8,10 @@
 #define S_IO_EXEC	1
 #define S_IO_RW		S_IO_READ|S_IO_WRITE
 
+#define S_IO_SEEK_SET	0
+#define S_IO_SEEK_CUR	1
+#define S_IO_SEEK_END	2
+
 #define S_TRUE	1
 #define S_FALSE	0
 
@@ -58,6 +62,7 @@ int s_io_desc_add (SIO *io, SIODesc *desc);
 int s_io_desc_del (SIO *io, int fd);
 SIODesc *s_io_desc_get (SIO *io, int fd);
 int s_io_desc_use (SIO *io, int fd);
+ut64 s_io_desc_seek (SIODesc *desc, ut64 offset, int whence);
 
 //map.c
 SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 size);

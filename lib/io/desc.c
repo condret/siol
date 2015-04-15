@@ -75,3 +75,10 @@ int s_io_desc_use (SIO *io, int fd)
 	io->desc = desc;
 	return S_TRUE;
 }
+
+ut64 s_io_desc_seek (SIODesc *desc, ut64 offset, int whence)
+{
+	if (!desc || !desc->cbs || !desc->cbs->lseek)
+		return (ut64)-1;
+	return desc->cbs->lseek (desc->io, desc, offset, whence);
+}
