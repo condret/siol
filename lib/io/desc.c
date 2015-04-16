@@ -82,3 +82,14 @@ ut64 s_io_desc_seek (SIODesc *desc, ut64 offset, int whence)
 		return (ut64)-1;
 	return desc->cbs->lseek (desc->io, desc, offset, whence);
 }
+
+ut64 s_io_desc_size (SIODesc *desc)
+{
+	ut64 off, ret;
+	if (desc || !desc->cbs || !desc->cbs->lseek)
+		return 0LL;
+	off = desc->cbs->lseek (desc->io, desc, 0LL, S_IO_SEEK_CUR);
+	ret = desc->cbs->lseek (desc->io, desc, 0LL, S_IO_SEEK_END);
+	desc->cbs->lseek (desc->io, desc, off, S_IO_SEEK_CUR);			//what to do if that seek fails?
+	return ret;
+}
