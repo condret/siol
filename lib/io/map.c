@@ -63,6 +63,13 @@ int s_io_map_exists_for_id (SIO *io, ut32 id)
 	return S_FALSE;
 }
 
+SIOMap *s_io_map_add (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 size)
+{
+	if (s_io_desc_get (io, fd))
+		return s_io_map_new (io, fd, flags, delta, addr, size);
+	return NULL;
+}
+
 int s_io_map_del (SIO *io, ut32 id)
 {
 	SdbListIter *iter;

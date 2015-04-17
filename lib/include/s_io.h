@@ -70,6 +70,7 @@ SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 si
 void s_io_map_init (SIO *io);
 int s_io_map_exists (SIO *io, SIOMap *map);
 int s_io_map_exists_for_id (SIO *io, ut32 id);
+SIOMap *s_io_map_add (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 size);
 int s_io_map_del (SIO *io, ut32 id);
 int s_io_map_priorize (SIO *io, ut32 id);
 void s_io_map_fini (SIO *io);
