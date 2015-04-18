@@ -65,8 +65,9 @@ int s_io_map_exists_for_id (SIO *io, ut32 id)
 
 SIOMap *s_io_map_add (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 size)
 {
-	if (s_io_desc_get (io, fd))
-		return s_io_map_new (io, fd, flags, delta, addr, size);
+	SIODesc *desc = s_io_desc_get (io, fd);
+	if (desc)
+		return s_io_map_new (io, fd, flags & desc->flags, delta, addr, size);		//a map cannot have higher permissions than the desc belonging to it
 	return NULL;
 }
 
