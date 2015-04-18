@@ -9,7 +9,7 @@ SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 si
 		return NULL;
 	map = R_NEW0 (SIOMap);
 	if (io->freed_map_ids) {
-		map->id = (ut32) ls_pop (io->freed_map_ids);
+		map->id = (ut32)(size_t) ls_pop (io->freed_map_ids);
 		if (!ls_length (io->freed_map_ids)) {
 			ls_free (io->freed_map_ids);
 			io->freed_map_ids = NULL;
@@ -84,7 +84,7 @@ int s_io_map_del (SIO *io, ut32 id)
 				io->freed_map_ids = ls_new ();
 				io->freed_map_ids->free = NULL;
 			}
-			ls_prepend (io->freed_map_ids, (void *)id);
+			ls_prepend (io->freed_map_ids, (void *)(size_t)id);
 			return S_TRUE;
 		}
 	}
@@ -138,7 +138,7 @@ void s_io_map_cleanup (SIO *io)
 				io->freed_map_ids = ls_new ();
 				io->freed_map_ids->free = NULL;
 			}
-			ls_prepend (io->freed_map_ids, (void *)map->id);
+			ls_prepend (io->freed_map_ids, (void *)(size_t)map->id);
 			ls_delete (io->maps, iter);
 		}
 	}
