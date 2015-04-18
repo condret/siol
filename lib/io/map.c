@@ -117,6 +117,33 @@ int s_io_map_priorize (SIO *io, ut32 id)
 	return S_FALSE;
 }
 
+void s_io_map_cleanup (SIO *io)
+{
+	SdbListIter *iter, *ator;
+	SIOMap *map;
+	if (!io || !io->maps)
+		return;
+	if (!io->files) {
+		s_io_map_fini (io);
+		s_io_map_init (io);
+		return;
+	}
+	for (iter = io->maps->head; iter != NULL; iter = ator) {
+		map = iter->data;
+		ator = iter->n;
+		if (!map) {
+			ls_delete (io->maps, iter);
+		} else if (!s_io_desc_get (io, map->fd)) {
+			if (!io->freed_map_ids) {
+				io->freed_map_ids = ls_new ();
+				io->freed_map_ids->free = NULL;
+			}
+			ls_prepend (io->freed_map_ids, (void *)map->id);
+			ls_delete (io->maps, iter);
+		}
+	}
+}
+
 void s_io_map_fini (SIO *io)
 {
 	if (!io)
