@@ -29,3 +29,15 @@ SIODesc *s_io_open_nomap (SIO *io, SIOCbs *cbs, char *uri, int flags)
 	s_io_desc_add (io, desc);
 	return desc;
 }
+
+SIODesc *s_io_open (SIO *io, SIOCbs *cbs, char *uri, int flags)
+{
+	SIODesc *desc;
+	if (!io || !io->maps)
+		return NULL;
+	desc = s_io_open_nomap (io, cbs, uri, flags);
+	if (!desc)
+		return NULL;
+	s_io_map_new (io, desc->fd, desc->flags, 0LL, 0LL, s_io_desc_size (desc));
+	return desc;
+}

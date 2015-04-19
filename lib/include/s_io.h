@@ -81,4 +81,5 @@ void s_io_map_fini (SIO *io);
 SIO *s_io_new ();
 SIO *s_io_init (SIO *io);
 SIODesc *s_io_open_nomap (SIO *io, SIOCbs *cbs, char *uri, int flags);
+SIODesc *s_io_open (SIO *io, SIOCbs *cbs, char *uri, int flags);
 #endif
