@@ -5,16 +5,16 @@
 SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 size)
 {
 	SIOMap *map = NULL;
-	if (!io || !io->maps || ((0xffffffffffffffff - size) < addr))
+	if (!io || !io->maps || ((0xffffffffffffffff - size) < addr))				//prevent overflow
 		return NULL;
 	map = R_NEW0 (SIOMap);
 	if (io->freed_map_ids) {
-		map->id = (ut32)(size_t) ls_pop (io->freed_map_ids);
-		if (!ls_length (io->freed_map_ids)) {
+		map->id = (ut32)(size_t) ls_pop (io->freed_map_ids);				//revive dead ids to prevent overflows
+		if (!ls_length (io->freed_map_ids)) {						//and keep ids low number so user don't need to type large numbers
 			ls_free (io->freed_map_ids);
-			io->freed_map_ids = NULL;
+			io->freed_map_ids = NULL;						//we are not storing pointers here, so free must be NULL or it will segfault
 		}
-	} else if (io->map_id != 0xffffffff) {
+	} else if (io->map_id != 0xffffffff) {							//part 2 of id-overflow-prevention
 		io->map_id++;
 		map->id = io->map_id;
 	} else {
@@ -25,7 +25,7 @@ SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 si
 	map->from = addr;
 	map->to = addr + size;
 	map->flags = flags;
-	ls_append (io->maps, map);
+	ls_append (io->maps, map);								//new map liveson the top
 	return map;
 }
 
@@ -37,6 +37,7 @@ void s_io_map_init (SIO *io)
 	}
 }
 
+//check if a map with exact the same properties exists
 int s_io_map_exists (SIO *io, SIOMap *map)
 {
 	SdbListIter *iter;
@@ -50,6 +51,7 @@ int s_io_map_exists (SIO *io, SIOMap *map)
 	return S_FALSE;
 }
 
+//check if a map with specified id exists
 int s_io_map_exists_for_id (SIO *io, ut32 id)
 {
 	SdbListIter *iter;
@@ -63,14 +65,16 @@ int s_io_map_exists_for_id (SIO *io, ut32 id)
 	return S_FALSE;
 }
 
+//add new map
 SIOMap *s_io_map_add (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 size)
 {
-	SIODesc *desc = s_io_desc_get (io, fd);
+	SIODesc *desc = s_io_desc_get (io, fd);							//check if desc exists
 	if (desc)
 		return s_io_map_new (io, fd, flags & desc->flags, delta, addr, size);		//a map cannot have higher permissions than the desc belonging to it
 	return NULL;
 }
 
+//deletes a map with specified id
 int s_io_map_del (SIO *io, ut32 id)
 {
 	SdbListIter *iter;
@@ -91,6 +95,33 @@ int s_io_map_del (SIO *io, ut32 id)
 	return S_FALSE;
 }
 
+//delete all maps with specified fd
+int s_io_map_del_for_fd (SIO *io, int fd)
+{
+	SdbListIter *iter, *ator;
+	SIOMap *map;
+	int ret = S_FALSE;
+	if (!io || !io->maps)
+		return ret;
+	for (iter = io->maps->head; iter != NULL; iter = ator) {
+		ator = iter->n;
+		map = iter->data;
+		if (!map) {									//this is done in s_io_map_cleanup too, but preventing some segfaults here too won't hurt
+			ls_delete (io->maps, iter);
+		} else if (map->fd == fd) {
+			ret = S_TRUE;								//a map with (map->fd == fd) existed/was found and will be deleted now
+			if (!io->freed_map_ids) {
+				io->freed_map_ids = ls_new ();
+				io->freed_map_ids->free = NULL;
+			}
+			ls_prepend (io->freed_map_ids, (void *)(size_t)fd);
+			ls_delete (io->maps, iter);						//delete iter and map
+		}
+	}
+	return ret;
+}
+
+//brings map with specified id to the top of of the list
 int s_io_map_priorize (SIO *io, ut32 id)
 {
 	SdbListIter *iter;
@@ -98,10 +129,10 @@ int s_io_map_priorize (SIO *io, ut32 id)
 	if (!io || !io->maps)
 		return S_FALSE;
 	ls_foreach (io->maps, iter, map) {
-		if (map->id == id) {
-			if (io->maps->head == iter)
+		if (map->id == id) {								//search for iter with the correct map
+			if (io->maps->head == iter)						//check if map is allready at the top
 				return S_TRUE;
-			if (iter->n)
+			if (iter->n)								//bring iter with correct map to the front
 				iter->n->p = iter->p;
 			if (iter->p)
 				iter->p->n = iter->n;
@@ -111,19 +142,20 @@ int s_io_map_priorize (SIO *io, ut32 id)
 			iter->n = io->maps->head;
 			io->maps->head = iter;
 			iter->p = NULL;
-			return S_TRUE;
+			return S_TRUE;								//TRUE if the map could be priorized
 		}
 	}
-	return S_FALSE;
+	return S_FALSE;										//FALSE if not
 }
 
+//may fix some inconsistencies in io->maps
 void s_io_map_cleanup (SIO *io)
 {
 	SdbListIter *iter, *ator;
 	SIOMap *map;
 	if (!io || !io->maps)
 		return;
-	if (!io->files) {
+	if (!io->files) {									//remove all maps if no descs exist
 		s_io_map_fini (io);
 		s_io_map_init (io);
 		return;
@@ -131,9 +163,9 @@ void s_io_map_cleanup (SIO *io)
 	for (iter = io->maps->head; iter != NULL; iter = ator) {
 		map = iter->data;
 		ator = iter->n;
-		if (!map) {
+		if (!map) {									//remove iter if the map is a null-ptr, this may fix some segfaults
 			ls_delete (io->maps, iter);
-		} else if (!s_io_desc_get (io, map->fd)) {
+		} else if (!s_io_desc_get (io, map->fd)) {					//delete map and iter if no desc exists for map->fd in io->files
 			if (!io->freed_map_ids) {
 				io->freed_map_ids = ls_new ();
 				io->freed_map_ids->free = NULL;
