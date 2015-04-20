@@ -85,4 +85,6 @@ SIODesc *s_io_open (SIO *io, SIOCbs *cbs, char *uri, int flags, int mode);
 SIODesc *s_io_open_at (SIO *io, SIOCbs *cbs, char *uri, int flags, int mode, ut64 at);
 int s_io_close (SIO *io, int fd);
 int s_io_pread_at (SIO *io, ut64 paddr, ut8 *buf, int len);
+int s_io_pwrite_at (SIO *io, ut64 paddr, const ut8 *buf, int len);
+
 #endif

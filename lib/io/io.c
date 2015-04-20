@@ -74,10 +74,20 @@ int s_io_close (SIO *io, int fd)
 
 int s_io_pread_at (SIO *io, ut64 paddr, ut8 *buf, int len)
 {
-	if (!io || !io->desc || !io->desc->cbs || !io->desc->cbs->read)
+	if (!io)
 		return 0;
 	if (io->ff)
 		memset (buf, 0xff, len);
+	if (!io->desc || !(io->desc->flags & S_IO_READ) || !io->desc->cbs || !io->desc->cbs->read)				//check pointers and permissions
+		return 0;
 	s_io_desc_seek (io->desc, paddr, S_IO_SEEK_SET);
 	return io->desc->cbs->read (io, io->desc, buf, len);
+}
+
+int s_io_pwrite_at (SIO *io, ut64 paddr, const ut8 *buf, int len)
+{
+	if (!io || !io->desc || !(io->desc->flags & S_IO_WRITE) || !io->desc->cbs || !io->desc->cbs->write)			//check pointers and permissions
+		return 0;
+	s_io_desc_seek (io->desc, paddr, S_IO_SEEK_SET);
+	return io->desc->cbs->write (io, io->desc, buf, len);
 }
