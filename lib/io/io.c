@@ -78,6 +78,6 @@ int s_io_pread_at (SIO *io, ut64 paddr, ut8 *buf, int len)
 		return 0;
 	if (io->ff)
 		memset (buf, 0xff, len);
-	s_io_desc_seek (io, paddr, S_IO_SEEK_SET);
+	s_io_desc_seek (io->desc, paddr, S_IO_SEEK_SET);
 	return io->desc->cbs->read (io, io->desc, buf, len);
 }
