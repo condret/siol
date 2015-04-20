@@ -53,7 +53,7 @@ SIODesc *s_io_open_at (SIO *io, SIOCbs *cbs, char *uri, int flags, int mode, ut6
 		 return NULL;
 	size = s_io_desc_size (desc);
 	if ((0xffffffffffffffff-size) < at) {
-		s_io_map_new (io, desc->fd, desc->flags, 0xffffffffffffffff - at, 0LL, size - (0xffffffffffffffff - at));	//splitt map into 2 maps if only 1 big map results into interger overflow
+		s_io_map_new (io, desc->fd, desc->flags, 0xffffffffffffffff - at, 0LL, size - (0xffffffffffffffff - at));	//split map into 2 maps if only 1 big map results into interger overflow
 		size = 0xffffffffffffffff - at;
 	}
 	s_io_map_new (io, desc->fd, desc->flags, 0LL, at, size);
@@ -70,4 +70,14 @@ int s_io_close (SIO *io, int fd)
 	s_io_desc_del (io, fd);													//remove entry from sdb-instance and free the desc-struct
 	s_io_map_cleanup (io);													//remove all dead maps
 	return S_TRUE;
+}
+
+int s_io_pread_at (SIO *io, ut64 paddr, ut8 *buf, int len)
+{
+	if (!io || !io->desc || !io->desc->cbs || !io->desc->cbs->read)
+		return 0;
+	if (io->ff)
+		memset (buf, 0xff, len);
+	s_io_desc_seek (io, paddr, S_IO_SEEK_SET);
+	return io->desc->cbs->read (io, io->desc, buf, len);
 }
