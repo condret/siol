@@ -27,6 +27,8 @@ SIODesc *s_io_open_nomap (SIO *io, SIOCbs *cbs, char *uri, int flags, int mode)
 	if (!desc->cbs)						//for none static callbacks, those that cannot use s_io_desc_new
 		desc->cbs = cbs;
 	s_io_desc_add (io, desc);
+	if (io->autofd || !io->desc)				//set desc as current if autofd or io->desc==NULL
+		io->desc = desc;
 	return desc;
 }
 
