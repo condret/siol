@@ -52,8 +52,22 @@ SIODesc *s_io_open_at (SIO *io, SIOCbs *cbs, char *uri, int flags, int mode, ut6
 	if (!desc)
 		 return NULL;
 	size = s_io_desc_size (desc);
-	if ((0xffffffffffffffff-size) < at)
+	if ((0xffffffffffffffff-size) < at) {
+		s_io_map_new (io, desc->fd, desc->flags, 0xffffffffffffffff - at, 0LL, size - (0xffffffffffffffff - at));	//splitt map into 2 maps if only 1 big map results into interger overflow
 		size = 0xffffffffffffffff - at;
+	}
 	s_io_map_new (io, desc->fd, desc->flags, 0LL, at, size);
 	return desc;
+}
+
+int s_io_close (SIO *io, int fd)
+{
+	SIODesc *desc = s_io_desc_get (io, fd);
+	if (!desc || !desc->cbs || !desc->cbs->close)										//check for cb
+		return S_FALSE;
+	if (!desc->cbs->close (desc))												//close fd
+		return S_FALSE;
+	s_io_desc_del (io, fd);													//remove entry from sdb-instance and free the desc-struct
+	s_io_map_cleanup (io);													//remove all dead maps
+	return S_TRUE;
 }

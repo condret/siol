@@ -83,4 +83,5 @@ SIO *s_io_init (SIO *io);
 SIODesc *s_io_open_nomap (SIO *io, SIOCbs *cbs, char *uri, int flags, int mode);
 SIODesc *s_io_open (SIO *io, SIOCbs *cbs, char *uri, int flags, int mode);
 SIODesc *s_io_open_at (SIO *io, SIOCbs *cbs, char *uri, int flags, int mode, ut64 at);
+int s_io_close (SIO *io, int fd);
 #endif

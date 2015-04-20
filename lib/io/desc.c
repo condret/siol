@@ -48,7 +48,6 @@ int s_io_desc_add (SIO *io, SIODesc *desc)
 int s_io_desc_del (SIO *io, int fd)
 {
 	char s[64];
-
 	if (!io || !io->files)
 		return S_FALSE;
 	sdb_itoa ((ut64)fd, s, 10);
