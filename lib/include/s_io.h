@@ -32,7 +32,7 @@ typedef struct s_io_t {
 typedef struct s_io_callbacks_t {
 	struct s_io_desc_t *(*open)(SIO *io, const char *uri, int flags, int mode);
 	int (*read)(SIO *io, struct s_io_desc_t *desc, ut8 *buf, int len);
-	int (*lseek)(SIO *io, struct s_io_desc_t *desc, ut64 offset, int whence);
+	ut64 (*lseek)(SIO *io, struct s_io_desc_t *desc, ut64 offset, int whence);
 	int (*write)(SIO *io, struct s_io_desc_t *desc, const ut8 *buf, int len);
 	int (*close)(struct s_io_desc_t *desc);
 } SIOCbs;
