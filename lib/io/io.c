@@ -103,3 +103,9 @@ int s_io_fini (SIO *io)
 	s_io_map_fini (io);
 	return S_TRUE;
 }
+
+void s_io_free (SIO *io)
+{
+	s_io_fini (io);
+	free (io);
+}

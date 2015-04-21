@@ -89,5 +89,6 @@ int s_io_close (SIO *io, int fd);
 int s_io_pread_at (SIO *io, ut64 paddr, ut8 *buf, int len);
 int s_io_pwrite_at (SIO *io, ut64 paddr, const ut8 *buf, int len);
 int s_io_fini (SIO *io);
+void s_io_free (SIO *io);
 
 #endif
