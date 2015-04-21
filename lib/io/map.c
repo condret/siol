@@ -10,7 +10,7 @@ SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 si
 	map = R_NEW0 (SIOMap);
 	if (io->freed_map_ids) {
 		map->id = (ut32)(size_t) ls_pop (io->freed_map_ids);				//revive dead ids to prevent overflows
-		if (!ls_length (io->freed_map_ids)) {						//and keep ids low number so user don't need to type large numbers
+		if (!io->freed_map_ids->length) {						//and keep ids low number so user don't need to type large numbers
 			ls_free (io->freed_map_ids);
 			io->freed_map_ids = NULL;						//we are not storing pointers here, so free must be NULL or it will segfault
 		}
