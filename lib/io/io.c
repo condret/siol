@@ -93,3 +93,13 @@ int s_io_pwrite_at (SIO *io, ut64 paddr, const ut8 *buf, int len)
 	s_io_desc_seek (io->desc, paddr, S_IO_SEEK_SET);
 	return io->desc->cbs->write (io, io->desc, buf, len);
 }
+
+//remove all descs and maps
+int s_io_fini (SIO *io)
+{
+	if (!io)
+		return S_FALSE;
+	s_io_desc_fini (io);
+	s_io_map_fini (io);
+	return S_TRUE;
+}

@@ -28,6 +28,7 @@ typedef struct s_io_t {
 	Sdb *files;
 } SIO;
 
+//SIOCbs instances should be predefined and not generated to prevent memleaks
 typedef struct s_io_callbacks_t {
 	struct s_io_desc_t *(*open)(SIO *io, const char *uri, int flags, int mode);
 	int (*read)(SIO *io, struct s_io_desc_t *desc, ut8 *buf, int len);
@@ -64,6 +65,7 @@ SIODesc *s_io_desc_get (SIO *io, int fd);
 int s_io_desc_use (SIO *io, int fd);
 ut64 s_io_desc_seek (SIODesc *desc, ut64 offset, int whence);
 ut64 s_io_desc_size (SIODesc *desc);
+int s_io_desc_fini (SIO *io);
 
 //map.c
 SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 size);
@@ -86,5 +88,6 @@ SIODesc *s_io_open_at (SIO *io, SIOCbs *cbs, char *uri, int flags, int mode, ut6
 int s_io_close (SIO *io, int fd);
 int s_io_pread_at (SIO *io, ut64 paddr, ut8 *buf, int len);
 int s_io_pwrite_at (SIO *io, ut64 paddr, const ut8 *buf, int len);
+int s_io_fini (SIO *io);
 
 #endif

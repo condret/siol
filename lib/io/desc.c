@@ -28,7 +28,7 @@ void s_io_desc_free (SIODesc *desc)
 {
 	if (desc) {
 		free (desc->uri);
-		free (desc->cbs);
+//		free (desc->cbs);
 	}
 	free (desc);
 }
@@ -90,5 +90,30 @@ ut64 s_io_desc_size (SIODesc *desc)
 	off = desc->cbs->lseek (desc->io, desc, 0LL, S_IO_SEEK_CUR);
 	ret = desc->cbs->lseek (desc->io, desc, 0LL, S_IO_SEEK_END);
 	desc->cbs->lseek (desc->io, desc, off, S_IO_SEEK_CUR);			//what to do if that seek fails?
+	return ret;
+}
+
+int desc_fini_cb (void *user, const char *fd, const char *cdesc)
+{
+//	SIO *io = (SIO *)user;							//unused
+	SIODesc *desc = (SIODesc *)(size_t)sdb_atoi (cdesc);
+	if (!desc)
+		return S_TRUE;
+	if (desc->cbs && desc->cbs->close)
+		desc->cbs->close (desc);
+	s_io_desc_free (desc);
+	return S_TRUE;
+}
+
+//closes all descs and frees all descs and io->files
+int s_io_desc_fini (SIO *io)
+{
+	int ret;
+	if (!io || !io->files)
+		return S_FALSE;
+	ret = sdb_foreach (io->files, desc_fini_cb, io);
+	sdb_free (io->files);
+	io->files = NULL;
+	io->desc = NULL;							//no map-cleanup here, to keep it modular useable
 	return ret;
 }
