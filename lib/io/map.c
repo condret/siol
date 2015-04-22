@@ -202,3 +202,14 @@ void s_io_map_fini (SIO *io)
 	io->freed_map_ids = NULL;
 	io->map_id = 0;
 }
+
+//checks if (from;to) overlaps with (map->from;map->to)
+int s_io_map_is_in_range (SIOMap *map, ut64 from, ut64 to)					//rename pls
+{
+	if (!map || (to < from))
+		return S_FALSE;
+	if (map->from <= from && from <= map->to)	return S_TRUE;
+	if (map->from <= to && to <= map->to)		return S_TRUE;
+	if (map->from > from && to > map->to)		return S_TRUE;
+	return S_FALSE;
+}

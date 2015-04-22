@@ -79,6 +79,7 @@ int s_io_map_del_for_fd (SIO *io, int fd);
 int s_io_map_priorize (SIO *io, ut32 id);
 void s_io_map_cleanup (SIO *io);
 void s_io_map_fini (SIO *io);
+int s_io_map_is_in_range (SIOMap *map, ut64 from, ut64 to);
 
 //io.c
 SIO *s_io_new ();
