@@ -54,11 +54,11 @@ SIODesc *s_io_open_at (SIO *io, SIOCbs *cbs, char *uri, int flags, int mode, ut6
 	if (!desc)
 		 return NULL;
 	size = s_io_desc_size (desc);
-	if ((0xffffffffffffffff-size) < at) {
-		s_io_map_new (io, desc->fd, desc->flags, 0xffffffffffffffff - at, 0LL, size - (0xffffffffffffffff - at));	//split map into 2 maps if only 1 big map results into interger overflow
-		size = 0xffffffffffffffff - at;
+	if (size && ((0xffffffffffffffff - size + 1) < at)) {									//second map
+		s_io_map_new (io, desc->fd, desc->flags, 0xffffffffffffffff - at + 1, 0LL, size - (0xffffffffffffffff - at) - 1);	//split map into 2 maps if only 1 big map results into interger overflow
+		size = 0xffffffffffffffff - at + 1;										//someone pls take a look at this confusing stuff
 	}
-	s_io_map_new (io, desc->fd, desc->flags, 0LL, at, size);
+	s_io_map_new (io, desc->fd, desc->flags, 0LL, at, size);								//first map
 	return desc;
 }
 
