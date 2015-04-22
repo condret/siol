@@ -74,6 +74,20 @@ SIOMap *s_io_map_add (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 si
 	return NULL;
 }
 
+//gets first map where addr fits in
+SIOMap *s_io_map_get (SIO *io, ut64 addr)
+{
+	SIOMap *map;
+	SdbListIter *iter;
+	if (!io || !io->maps)
+		return NULL;
+	ls_foreach (io->maps, iter, map) {
+		if ((map->from <= addr) && (map->to >= addr))
+			return map;
+	}
+	return NULL;
+}
+
 //deletes a map with specified id
 int s_io_map_del (SIO *io, ut32 id)
 {
