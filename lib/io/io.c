@@ -189,7 +189,7 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 			op (io, map->delta, buf, len - (int)(vendaddr - map->to));
 			io->desc = temp;
 			vaddr = map->to + 1;
-			buf = buf + (vendaddr - map->to);
+			buf = buf + (len - (int)(vendaddr - map->to));
 			len = (int)(vendaddr - map->to);
 			operate_on_itermap (iter->p, io, vaddr, buf, len, op);
 		}
@@ -205,7 +205,7 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 			op (io, map->delta + (vaddr - map->from), buf, len - (int)(vendaddr - map->to));
 			io->desc = temp;
 			vaddr = map->to + 1;
-			buf = buf + (vendaddr - map->to);
+			buf = buf + (len - (int)(vendaddr - map->to));
 			len = (int)(vendaddr - map->to);
 			operate_on_itermap (iter->p, io, vaddr, buf, len, op);
 		}

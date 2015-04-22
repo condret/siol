@@ -25,6 +25,7 @@ SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 si
 	map->from = addr;
 	map->to = addr + size - 1;								//SIOMap describes an interval  of addresses (map->from; map->to)
 	map->flags = flags;
+	map->delta = delta;
 	ls_append (io->maps, map);								//new map lives on the top
 	return map;
 }
