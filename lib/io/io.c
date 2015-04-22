@@ -1,6 +1,8 @@
 #include <s_io.h>
 #include <sdb.h>
 
+void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int len, int (op (SIO *io, ut64 addr, ut8 *buf, int len)));
+
 SIO *s_io_new ()
 {
 	SIO *ret = R_NEW0 (SIO);
@@ -86,12 +88,52 @@ int s_io_pread_at (SIO *io, ut64 paddr, ut8 *buf, int len)
 	return io->desc->cbs->read (io, io->desc, buf, len);
 }
 
-int s_io_pwrite_at (SIO *io, ut64 paddr, const ut8 *buf, int len)
+int s_io_pwrite_at (SIO *io, ut64 paddr, ut8 *buf, int len)
 {
 	if (!io || !io->desc || !(io->desc->flags & S_IO_WRITE) || !io->desc->cbs || !io->desc->cbs->write)			//check pointers and permissions
 		return 0;
 	s_io_desc_seek (io->desc, paddr, S_IO_SEEK_SET);
 	return io->desc->cbs->write (io, io->desc, buf, len);
+}
+
+int s_io_vread_at (SIO *io, ut64 vaddr, ut8 *buf, int len)
+{
+	if (!io)
+		return S_FALSE;
+	s_io_map_cleanup (io);
+	if (!io->maps)
+		return s_io_pread_at (io, vaddr, buf, len);
+	operate_on_itermap (io->maps->tail, io, vaddr, buf, len, s_io_pread_at);
+	return S_TRUE;
+}
+
+int s_io_vwrite_at (SIO *io, ut64 vaddr, ut8 *buf, int len)
+{
+	if (!io)
+		return S_FALSE;
+	s_io_map_cleanup (io);
+	if (!io->maps)
+		return s_io_pwrite_at (io, vaddr, buf, len);
+	operate_on_itermap (io->maps->tail, io, vaddr, buf, len, s_io_pwrite_at);
+	return S_TRUE;
+}
+
+int s_io_read_at (SIO *io, ut64 addr, ut8 *buf, int len)
+{
+	if (!io)
+		return 0;
+	if (io->va)
+		return s_io_vread_at (io, addr, buf, len);
+	return s_io_pread_at (io, addr, buf, len);
+}
+
+int s_io_write_at (SIO *io, ut64 addr, ut8 *buf, int len)
+{
+	if (!io)
+		return 0;
+	if (io->va)
+		return s_io_vwrite_at (io, addr, buf, len);
+	return s_io_pwrite_at (io, addr, buf, len);
 }
 
 //remove all descs and maps
@@ -111,7 +153,7 @@ void s_io_free (SIO *io)
 }
 
 //not public api
-void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int len, int *(*op (SIO *io, ut64 addr, ut8 *buf, int len)))
+void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int len, int (op (SIO *io, ut64 addr, ut8 *buf, int len)))
 {
 	SIODesc *temp;
 	SIOMap *map;
