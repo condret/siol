@@ -109,3 +109,63 @@ void s_io_free (SIO *io)
 	s_io_fini (io);
 	free (io);
 }
+
+//not public api
+void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int len, int *(*op (SIO *io, ut64 addr, ut8 *buf, int len)))
+{
+	SIODesc *temp;
+	SIOMap *map;
+	ut64 vendaddr = vaddr + len - 1;
+	if (!io || !len)
+		return;
+	if (!iter) {
+		op (io, vaddr, buf, len);				//end of list
+		return;
+	}
+	map = (SIOMap *)iter->data;
+	while (!s_io_map_is_in_range (map, vaddr, vendaddr)) {		//search for next map or end of list
+		iter = iter->p;
+		if (!iter) {						//end of list
+			op (io, vaddr, buf, len);			//pread/pwrite
+			return;
+		}
+		map = (SIOMap *)iter->data;
+	}
+	if (map->from >= vaddr) {
+		operate_on_itermap (iter->p, io, vaddr, buf, (int)(map->from - vaddr), op);
+		buf = buf + (map->from - vaddr);
+		vaddr = map->from;
+		len = (int)(vendaddr - vaddr + 1);
+		if (vendaddr <= map->to) {
+			temp = io->desc;
+			s_io_desc_use (io, map->fd);
+			op (io, map->delta, buf, len);
+			io->desc = temp;
+		} else {
+			temp = io->desc;
+			s_io_desc_use (io, map->fd);
+			op (io, map->delta, buf, len - (int)(vendaddr - map->to));
+			io->desc = temp;
+			vaddr = map->to + 1;
+			buf = buf + (vendaddr - map->to);
+			len = (int)(vendaddr - map->to);
+			operate_on_itermap (iter->p, io, vaddr, buf, len, op);
+		}
+	} else {
+		if (vendaddr <= map->to) {
+			temp = io->desc;
+			s_io_desc_use (io, map->fd);
+			op (io, map->delta + (vaddr - map->from), buf, len);		//warning: may overflow in rare usecases
+			io->desc = temp;
+		} else {
+			temp = io->desc;
+			s_io_desc_use (io, map->fd);
+			op (io, map->delta + (vaddr - map->from), buf, len - (int)(vendaddr - map->to));
+			io->desc = temp;
+			vaddr = map->to + 1;
+			buf = buf + (vendaddr - map->to);
+			len = (int)(vendaddr - map->to);
+			operate_on_itermap (iter->p, io, vaddr, buf, len, op);
+		}
+	}
+}
