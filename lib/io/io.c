@@ -161,13 +161,19 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 {
 	SIODesc *temp;
 	SIOMap *map;
-	ut64 vendaddr = vaddr + len - 1;
+	ut64 vendaddr;
 	if (!io || !len || !buf)
 		return;
 	if (!iter) {
 		op (io, vaddr, buf, len);				//end of list
 		return;
 	}
+	if ((0xffffffffffffffff - len + 1) <= vaddr) {			//this block is not that much elegant
+		int nlen;						//needed for edge-cases
+		vendaddr = 0xffffffffffffffff;				//add a test for this block
+		nlen = (int)(vendaddr - vaddr + 1);
+		operate_on_itermap (iter, io, 0LL, buf + nlen, len - nlen, match_flg, op);
+	} else	vendaddr = vaddr + len - 1;
 	map = (SIOMap *)iter->data;
 	while (!s_io_map_is_in_range (map, vaddr, vendaddr)) {		//search for next map or end of list
 		iter = iter->p;
