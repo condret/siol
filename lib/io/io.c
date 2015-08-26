@@ -78,11 +78,11 @@ int s_io_close (SIO *io, int fd)
 
 int s_io_pread_at (SIO *io, ut64 paddr, ut8 *buf, int len)
 {
-	if (!io)
+	if (!io || !buf)
 		return 0;
 	if (io->ff)
 		memset (buf, 0xff, len);
-	if (!io->desc || !(io->desc->flags & S_IO_READ) || !io->desc->cbs || !io->desc->cbs->read)				//check pointers and permissions
+	if (!io->desc || !(io->desc->flags & S_IO_READ) || !io->desc->cbs || !io->desc->cbs->read || !len)			//check pointers and permissions
 		return 0;
 	s_io_desc_seek (io->desc, paddr, S_IO_SEEK_SET);
 	return io->desc->cbs->read (io, io->desc, buf, len);
@@ -90,7 +90,7 @@ int s_io_pread_at (SIO *io, ut64 paddr, ut8 *buf, int len)
 
 int s_io_pwrite_at (SIO *io, ut64 paddr, ut8 *buf, int len)
 {
-	if (!io || !io->desc || !(io->desc->flags & S_IO_WRITE) || !io->desc->cbs || !io->desc->cbs->write)			//check pointers and permissions
+	if (!io || !buf || !io->desc || !(io->desc->flags & S_IO_WRITE) || !io->desc->cbs || !io->desc->cbs->write || !len)	//check pointers and permissions
 		return 0;
 	s_io_desc_seek (io->desc, paddr, S_IO_SEEK_SET);
 	return io->desc->cbs->write (io, io->desc, buf, len);
@@ -98,8 +98,10 @@ int s_io_pwrite_at (SIO *io, ut64 paddr, ut8 *buf, int len)
 
 int s_io_vread_at (SIO *io, ut64 vaddr, ut8 *buf, int len)
 {
-	if (!io)
+	if (!io || !buf)
 		return S_FALSE;
+	if (!len)
+		return S_TRUE;
 	s_io_map_cleanup (io);
 	if (!io->maps)
 		return s_io_pread_at (io, vaddr, buf, len);
@@ -109,8 +111,10 @@ int s_io_vread_at (SIO *io, ut64 vaddr, ut8 *buf, int len)
 
 int s_io_vwrite_at (SIO *io, ut64 vaddr, ut8 *buf, int len)
 {
-	if (!io)
+	if (!io || !buf)
 		return S_FALSE;
+	if (!len)
+		return S_TRUE;
 	s_io_map_cleanup (io);
 	if (!io->maps)
 		return s_io_pwrite_at (io, vaddr, buf, len);
@@ -120,7 +124,7 @@ int s_io_vwrite_at (SIO *io, ut64 vaddr, ut8 *buf, int len)
 
 int s_io_read_at (SIO *io, ut64 addr, ut8 *buf, int len)
 {
-	if (!io)
+	if (!io || !buf || !len)
 		return 0;
 	if (io->va)
 		return s_io_vread_at (io, addr, buf, len);
@@ -129,7 +133,7 @@ int s_io_read_at (SIO *io, ut64 addr, ut8 *buf, int len)
 
 int s_io_write_at (SIO *io, ut64 addr, ut8 *buf, int len)
 {
-	if (!io)
+	if (!io || !buf || !len)
 		return 0;
 	if (io->va)
 		return s_io_vwrite_at (io, addr, buf, len);
@@ -158,7 +162,7 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 	SIODesc *temp;
 	SIOMap *map;
 	ut64 vendaddr = vaddr + len - 1;
-	if (!io || !len)
+	if (!io || !len || !buf)
 		return;
 	if (!iter) {
 		op (io, vaddr, buf, len);				//end of list
