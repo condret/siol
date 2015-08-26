@@ -1,7 +1,7 @@
 #include <s_io.h>
 #include <sdb.h>
 
-void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int len, int (op (SIO *io, ut64 addr, ut8 *buf, int len)));
+void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int len, int match_flg, int (op (SIO *io, ut64 addr, ut8 *buf, int len)));
 
 SIO *s_io_new ()
 {
@@ -103,7 +103,7 @@ int s_io_vread_at (SIO *io, ut64 vaddr, ut8 *buf, int len)
 	s_io_map_cleanup (io);
 	if (!io->maps)
 		return s_io_pread_at (io, vaddr, buf, len);
-	operate_on_itermap (io->maps->tail, io, vaddr, buf, len, s_io_pread_at);
+	operate_on_itermap (io->maps->tail, io, vaddr, buf, len, S_IO_READ, s_io_pread_at);
 	return S_TRUE;
 }
 
@@ -114,7 +114,7 @@ int s_io_vwrite_at (SIO *io, ut64 vaddr, ut8 *buf, int len)
 	s_io_map_cleanup (io);
 	if (!io->maps)
 		return s_io_pwrite_at (io, vaddr, buf, len);
-	operate_on_itermap (io->maps->tail, io, vaddr, buf, len, s_io_pwrite_at);
+	operate_on_itermap (io->maps->tail, io, vaddr, buf, len, S_IO_WRITE, s_io_pwrite_at);
 	return S_TRUE;
 }
 
@@ -153,7 +153,7 @@ void s_io_free (SIO *io)
 }
 
 //not public api
-void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int len, int (op (SIO *io, ut64 addr, ut8 *buf, int len)))
+void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int len, int match_flg, int (op (SIO *io, ut64 addr, ut8 *buf, int len)))
 {
 	SIODesc *temp;
 	SIOMap *map;
@@ -174,40 +174,48 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 		map = (SIOMap *)iter->data;
 	}
 	if (map->from >= vaddr) {
-		operate_on_itermap (iter->p, io, vaddr, buf, (int)(map->from - vaddr), op);
+		operate_on_itermap (iter->p, io, vaddr, buf, (int)(map->from - vaddr), match_flg, op);
 		buf = buf + (map->from - vaddr);
 		vaddr = map->from;
 		len = (int)(vendaddr - vaddr + 1);
 		if (vendaddr <= map->to) {
-			temp = io->desc;
-			s_io_desc_use (io, map->fd);
-			op (io, map->delta, buf, len);
-			io->desc = temp;
+			if ((map->flags & match_flg) == match_flg) {
+				temp = io->desc;
+				s_io_desc_use (io, map->fd);
+				op (io, map->delta, buf, len);
+				io->desc = temp;
+			}
 		} else {
-			temp = io->desc;
-			s_io_desc_use (io, map->fd);
-			op (io, map->delta, buf, len - (int)(vendaddr - map->to));
-			io->desc = temp;
+			if ((map->flags & match_flg) == match_flg) {
+				temp = io->desc;
+				s_io_desc_use (io, map->fd);
+				op (io, map->delta, buf, len - (int)(vendaddr - map->to));
+				io->desc = temp;
+			}
 			vaddr = map->to + 1;
 			buf = buf + (len - (int)(vendaddr - map->to));
 			len = (int)(vendaddr - map->to);
-			operate_on_itermap (iter->p, io, vaddr, buf, len, op);
+			operate_on_itermap (iter->p, io, vaddr, buf, len, match_flg, op);
 		}
 	} else {
 		if (vendaddr <= map->to) {
-			temp = io->desc;
-			s_io_desc_use (io, map->fd);
-			op (io, map->delta + (vaddr - map->from), buf, len);		//warning: may overflow in rare usecases
-			io->desc = temp;
+			if ((map->flags & match_flg) == match_flg) {
+				temp = io->desc;
+				s_io_desc_use (io, map->fd);
+				op (io, map->delta + (vaddr - map->from), buf, len);		//warning: may overflow in rare usecases
+				io->desc = temp;
+			}
 		} else {
-			temp = io->desc;
-			s_io_desc_use (io, map->fd);
-			op (io, map->delta + (vaddr - map->from), buf, len - (int)(vendaddr - map->to));
-			io->desc = temp;
+			if ((map->flags & match_flg) == match_flg) {
+				temp = io->desc;
+				s_io_desc_use (io, map->fd);
+				op (io, map->delta + (vaddr - map->from), buf, len - (int)(vendaddr - map->to));
+				io->desc = temp;
+			}
 			vaddr = map->to + 1;
 			buf = buf + (len - (int)(vendaddr - map->to));
 			len = (int)(vendaddr - map->to);
-			operate_on_itermap (iter->p, io, vaddr, buf, len, op);
+			operate_on_itermap (iter->p, io, vaddr, buf, len, match_flg, op);
 		}
 	}
 }
