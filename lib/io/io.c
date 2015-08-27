@@ -56,9 +56,9 @@ SIODesc *s_io_open_at (SIO *io, SIOCbs *cbs, char *uri, int flags, int mode, ut6
 	if (!desc)
 		 return NULL;
 	size = s_io_desc_size (desc);
-	if (size && ((0xffffffffffffffff - size + 1) < at)) {									//second map
-		s_io_map_new (io, desc->fd, desc->flags, 0xffffffffffffffff - at + 1, 0LL, size - (0xffffffffffffffff - at) - 1);	//split map into 2 maps if only 1 big map results into interger overflow
-		size = 0xffffffffffffffff - at + 1;										//someone pls take a look at this confusing stuff
+	if (size && ((UT64_MAX - size + 1) < at)) {									//second map
+		s_io_map_new (io, desc->fd, desc->flags, UT64_MAX - at + 1, 0LL, size - (UT64_MAX - at) - 1);	//split map into 2 maps if only 1 big map results into interger overflow
+		size = UT64_MAX - at + 1;										//someone pls take a look at this confusing stuff
 	}
 	s_io_map_new (io, desc->fd, desc->flags, 0LL, at, size);								//first map
 	return desc;
@@ -168,9 +168,9 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 		op (io, vaddr, buf, len);				//end of list
 		return;
 	}
-	if ((0xffffffffffffffff - len + 1) <= vaddr) {			//this block is not that much elegant
+	if ((UT64_MAX - len + 1) < vaddr) {				//this block is not that much elegant
 		int nlen;						//needed for edge-cases
-		vendaddr = 0xffffffffffffffff;				//add a test for this block
+		vendaddr = UT64_MAX;					//add a test for this block
 		nlen = (int)(vendaddr - vaddr + 1);
 		operate_on_itermap (iter, io, 0LL, buf + nlen, len - nlen, match_flg, op);
 	} else	vendaddr = vaddr + len - 1;
