@@ -5,7 +5,7 @@
 SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 size)
 {
 	SIOMap *map = NULL;
-	if (!size || !io || !io->maps || ((0xffffffffffffffff - size + 1) < addr))		//prevent overflow
+	if (!size || !io || !io->maps || ((UT64_MAX - size + 1) < addr))			//prevent overflow
 		return NULL;
 	map = R_NEW0 (SIOMap);
 	if (io->freed_map_ids) {
