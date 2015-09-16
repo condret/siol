@@ -44,6 +44,7 @@ typedef struct s_io_map_t {
 	ut64 from;
 	ut64 to;
 	ut64 delta;
+	char *name;
 } SIOMap;
 
 typedef struct s_io_desc_t {
@@ -80,6 +81,8 @@ int s_io_map_priorize (SIO *io, ut32 id);
 void s_io_map_cleanup (SIO *io);
 void s_io_map_fini (SIO *io);
 int s_io_map_is_in_range (SIOMap *map, ut64 from, ut64 to);
+void s_io_map_set_name (SIOMap *map, const char *name);
+void s_io_map_del_name (SIOMap *map);
 
 //io.c
 SIO *s_io_new ();

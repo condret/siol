@@ -30,11 +30,18 @@ SIOMap *s_io_map_new (SIO *io, int fd, int flags, ut64 delta, ut64 addr, ut64 si
 	return map;
 }
 
+void map_free (SIOMap *map)									//not-public-api
+{
+	if (map)
+		free (map->name);
+	free (map);
+}
+
 void s_io_map_init (SIO *io)
 {
 	if (io) {
 		io->maps = ls_new ();
-		io->maps->free = free;
+		io->maps->free = map_free;
 	}
 }
 
@@ -213,4 +220,20 @@ int s_io_map_is_in_range (SIOMap *map, ut64 from, ut64 to)					//rename pls
 	if (map->from <= to && to <= map->to)		return S_TRUE;
 	if (map->from > from && to > map->to)		return S_TRUE;
 	return S_FALSE;
+}
+
+void s_io_map_set_name (SIOMap *map, const char *name)
+{
+	if (!map || !name)
+		return;
+	free (map->name);
+	map->name = strdup (name);
+}
+
+void s_io_map_del_name (SIOMap *map)
+{
+	if (!map)
+		return;
+	free (map->name);
+	map->name = NULL;
 }
