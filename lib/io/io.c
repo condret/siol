@@ -81,7 +81,7 @@ int s_io_pread_at (SIO *io, ut64 paddr, ut8 *buf, int len)
 {
 	printf ("s_io_pread: called\n");
 	if (!io || !buf) {
-		printf ("s_io_pread: io = 0x%p ; buf = 0x%p\n", io, buf);
+		printf ("s_io_pread: io = %p ; buf = %p\n", io, buf);
 		return 0;
 	}
 	printf ("s_io_pread: io->ff = %d ; paddr = 0x%llx ; len = %d\n", io->ff, paddr, len);
@@ -106,10 +106,10 @@ int s_io_vread_at (SIO *io, ut64 vaddr, ut8 *buf, int len)
 {
 	printf ("s_io_vread: called\n");
 	if (!io || !buf) {
-		printf ("s_io_vread: io = 0x%p ; buf = 0x%p\n", io, buf);
+		printf ("s_io_vread: io = %p ; buf = %p\n", io, buf);
 		return S_FALSE;
 	}
-	printf ("s_io_vread: io->maps = 0x%p ; vaddr = 0x%llx ; len %d\n", io->maps, vaddr, len);
+	printf ("s_io_vread: io->maps = %p ; vaddr = 0x%llx ; len %d\n", io->maps, vaddr, len);
 	if (!len)
 		return S_TRUE;
 	s_io_map_cleanup (io);
@@ -136,7 +136,7 @@ int s_io_read_at (SIO *io, ut64 addr, ut8 *buf, int len)
 {
 	printf ("s_io_read_at: called\n");
 	if (!io || !buf || !len) {
-		printf ("s_io_read_at: io = 0x%p ; buf = 0x%p ; len = %d\n", io, buf, len);
+		printf ("s_io_read_at: io = %p ; buf = %p ; len = %d\n", io, buf, len);
 		return 0;
 	}
 	printf ("s_io_read_at: io->va = %d ; addr = 0x%llx ; len = %d\n", io->va, addr, len);
@@ -176,8 +176,8 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 	SIODesc *temp;
 	SIOMap *map;
 	ut64 vendaddr;
-	printf ("operate_on_itermap: called"
-		"io = 0x%p ; buf = 0x%p ; vaddr = 0x%llx ; len = %d\n", io, buf, vaddr, len);
+	printf ("operate_on_itermap: called ; "
+		"io = %p ; buf = %p ; vaddr = 0x%llx ; len = %d\n", io, buf, vaddr, len);
 	if (!io || !len || !buf)
 		return;
 	if (!iter) {
