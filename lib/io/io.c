@@ -112,7 +112,9 @@ int s_io_vread_at (SIO *io, ut64 vaddr, ut8 *buf, int len)
 	printf ("s_io_vread: io->maps = %p ; vaddr = 0x%llx ; len %d\n", io->maps, vaddr, len);
 	if (!len)
 		return S_TRUE;
+	printf ("io->maps->tail %p\n", io->maps->tail);
 	s_io_map_cleanup (io);
+	printf ("io->maps->tail %p\n", io->maps->tail);
 	if (!io->maps)
 		return s_io_pread_at (io, vaddr, buf, len);
 	operate_on_itermap (io->maps->tail, io, vaddr, buf, len, S_IO_READ, s_io_pread_at);
@@ -181,6 +183,7 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 	if (!io || !len || !buf)
 		return;
 	if (!iter) {
+		printf ("operate_on_itermap: call op @ 1\n");
 		op (io, vaddr, buf, len);				//end of list
 		return;
 	}
@@ -194,6 +197,7 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 	while (!s_io_map_is_in_range (map, vaddr, vendaddr)) {		//search for next map or end of list
 		iter = iter->p;
 		if (!iter) {						//end of list
+			printf ("operate_on_itermap: call op @ 2\n");
 			op (io, vaddr, buf, len);			//pread/pwrite
 			return;
 		}
@@ -208,6 +212,7 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 			if ((map->flags & match_flg) == match_flg) {
 				temp = io->desc;
 				s_io_desc_use (io, map->fd);
+				printf ("operate_on_itermap: call op @ 3\n");
 				op (io, map->delta, buf, len);
 				io->desc = temp;
 			}
@@ -215,6 +220,7 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 			if ((map->flags & match_flg) == match_flg) {
 				temp = io->desc;
 				s_io_desc_use (io, map->fd);
+				printf ("operate_on_itermap: call op @ 4\n");
 				op (io, map->delta, buf, len - (int)(vendaddr - map->to));
 				io->desc = temp;
 			}
@@ -228,6 +234,7 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 			if ((map->flags & match_flg) == match_flg) {
 				temp = io->desc;
 				s_io_desc_use (io, map->fd);
+				printf ("operate_on_itermap: call op @ 5\n");
 				op (io, map->delta + (vaddr - map->from), buf, len);		//warning: may overflow in rare usecases
 				io->desc = temp;
 			}
@@ -235,6 +242,7 @@ void operate_on_itermap (SdbListIter *iter, SIO *io, ut64 vaddr, ut8 *buf, int l
 			if ((map->flags & match_flg) == match_flg) {
 				temp = io->desc;
 				s_io_desc_use (io, map->fd);
+				printf ("operate_on_itermap: call op @ 6\n");
 				op (io, map->delta + (vaddr - map->from), buf, len - (int)(vendaddr - map->to));
 				io->desc = temp;
 			}

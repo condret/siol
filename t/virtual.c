@@ -80,6 +80,7 @@ int main ()
 	s_io_map_new (io, io->desc->fd, io->desc->flags, 0, 2, 3);
 	ls_foreach (io->maps, iter, map)
 		printf ("id: %d fd: %d from: 0x%llx to: 0x%llx delta: 0x%llx\n", map->id, map->fd, map->from, map->to, map->delta);
+	printf ("io->maps->tail = %p\n", io->maps->tail);
 	s_io_read_at (io, 0LL, buf, 8);
 	buf[6] = (ut8)0;
 	printf ("read 6 chars: %s\n", (char *)buf);
